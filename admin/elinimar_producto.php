@@ -9,15 +9,16 @@ require_once '../config/database.php';
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-if ($id) {
+if ($id > 0) {
     $conn = conectarDB();
-    
-    $sql = "DELETE FROM productos WHERE id = $id";
-    $conn->query($sql);
-    
+
+    // Uso de prepared statement para prevenir SQL Injection
+    $sql = $conn->prepare("DELETE FROM productos WHERE id = ?");
+    $sql->bind_param("i", $id);
+    $sql->execute();
+
     $conn->close();
 }
 
 header("Location: productos.php");
 exit();
-?>
