@@ -6,6 +6,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once '../config/database.php';
+require_once '../includes/header.php'; // Cambio: include → include_once/require_once
 
 $conn = conectarDB();
 
@@ -18,40 +19,56 @@ if (!$id) {
     exit();
 }
 
-// Obtener tipos de productos
-$query_tipos = "SELECT * FROM tipos_productos ORDER BY nombre";
-$tipos_productos = $conn->query($query_tipos);
+// Obtener tipos de productos usando prepared statements
+$query_tipos = $conn->prepare("SELECT * FROM tipos_productos ORDER BY nombre");
+$query_tipos->execute();
+$tipos_productos = $query_tipos->get_result();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nombre = $conn->real_escape_string($_POST['nombre']);
-    $descripcion = $conn->real_escape_string($_POST['descripcion']);
+
+    $nombre = trim($_POST['nombre']);
+    $descripcion = trim($_POST['descripcion']);
     $precio = floatval($_POST['precio']);
     $tipo_producto_id = intval($_POST['tipo_producto_id']);
     $disponible = isset($_POST['disponible']) ? 1 : 0;
-    
+
     if ($nombre && $precio && $tipo_producto_id) {
-        $sql = "UPDATE productos SET 
-                nombre='$nombre', 
-                descripcion='$descripcion', 
-                precio=$precio, 
-                tipo_producto_id=$tipo_producto_id, 
-                disponible=$disponible 
-                WHERE id=$id";
-        
-        if ($conn->query($sql)) {
+
+        // Uso de prepared statements para evitar SQL Injection
+        $sql = $conn->prepare("UPDATE productos SET 
+                nombre=?, 
+                descripcion=?, 
+                precio=?, 
+                tipo_producto_id=?, 
+                disponible=?
+                WHERE id=?");
+
+        $sql->bind_param("ssdiii", 
+            $nombre, 
+            $descripcion, 
+            $precio, 
+            $tipo_producto_id, 
+            $disponible,
+            $id
+        );
+
+        if ($sql->execute()) {
             header("Location: productos.php");
             exit();
         } else {
             $error = "Error al actualizar el producto: " . $conn->error;
         }
+
     } else {
         $error = "Por favor complete todos los campos requeridos";
     }
 }
 
-// Obtener datos del producto
-$sql = "SELECT * FROM productos WHERE id = $id";
-$result = $conn->query($sql);
+// Obtener datos del producto de forma segura
+$sql = $conn->prepare("SELECT * FROM productos WHERE id = ?");
+$sql->bind_param("i", $id);
+$sql->execute();
+$result = $sql->get_result();
 $producto = $result->fetch_assoc();
 
 if (!$producto) {
@@ -68,13 +85,12 @@ if (!$producto) {
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-    <?php include '../includes/header.php'; ?>
-    
+
     <div class="container">
         <h1>Editar Producto</h1>
         
         <?php if ($error): ?>
-            <div class="alert alert-error"><?php echo $error; ?></div>
+            <div class="alert alert-error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
         
         <form method="POST" action="" class="form-product">
@@ -84,7 +100,7 @@ if (!$producto) {
             </div>
             
             <div class="form-group">
-                <label for="descripcion">Descripcion</label>
+                <label for="descripcion">Descripción</label>
                 <textarea id="descripcion" name="descripcion" rows="4"><?php echo htmlspecialchars($producto['descripcion']); ?></textarea>
             </div>
             
@@ -121,7 +137,7 @@ if (!$producto) {
     </div>
     
     <?php 
-    include '../includes/footer.php';
+    require_once '../includes/footer.php'; // Cambio a require_once
     $conn->close();
     ?>
 </body>
