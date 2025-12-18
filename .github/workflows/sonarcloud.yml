@@ -20,10 +20,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-```
-
-### **5. Haz scroll hacia abajo**
-
-### **6. En "Commit new file" escribe:**
-```
-Agregar workflow de SonarCloud
