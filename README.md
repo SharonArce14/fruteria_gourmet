@@ -1,5 +1,7 @@
 # Taller Calidad Software - Frutería Gourmet
 
+
+
 Sistema de gestión para una frutería gourmet desarrollado en PHP puro.
 
 ## Descripción del Proyecto
