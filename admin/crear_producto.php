@@ -47,8 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-    <?php include '../includes/header.php'; ?>
-    
+<?php include_once '../includes/header.php'; ?>    
     <div class="container">
         <h1>Crear Nuevo Producto</h1>
         
@@ -102,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
     
     <?php 
-    include '../includes/footer.php';
+   <?php include_once '../includes/footer.php'; ?>
     $conn->close();
     ?>
 </body>
