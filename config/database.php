@@ -3,7 +3,7 @@
 function conectarDB() {
     $host = "localhost";
     $usuario = "fruteria_user";
-    $password = "Frut3ria#2025";
+    $password = getenv('DB_PASSWORD') ?: "";
     $basedatos = "fruteria_gourmet";
     
     $conn = new mysqli($host, $usuario, $password, $basedatos);
